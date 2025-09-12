@@ -1,0 +1,116 @@
+import customtkinter as ctk
+import mysql.connector as sql
+
+
+window = ctk.CTk()
+window.geometry('600x400')
+window.title("TRAVEL SYSTEM")
+
+
+conn = sql.connect(
+    host='localhost',
+    user='root',
+    password='root',
+    use_pure=True,
+    charset='utf8'
+)
+cursor = conn.cursor()
+
+
+cursor.execute('CREATE DATABASE IF NOT EXISTS TRAVEL_SYSTEM;')
+cursor.execute('USE TRAVEL_SYSTEM;')
+cursor.execute('CREATE TABLE IF NOT EXISTS LOGIN_INFO (USERNAME VARCHAR(50),PASSWORD VARCHAR(50));')
+cursor.execute('CREATE TABLE IF NOT EXISTS USER_INFO (USERNAME VARCHAR(50),PASSWORD VARCHAR(50),EMAIL VARCHAR(50),PHNO INT(12));')
+
+
+def login_page():
+    global loginpage
+    loginpage = ctk.CTkFrame(master=window, fg_color='#f79e59')
+    loginpage.pack(expand=True, fill='both')
+    placeholder = ctk.CTkFrame(loginpage, fg_color='#f79e59')
+    placeholder.pack(expand=True)
+    username = ctk.CTkEntry(master=placeholder, placeholder_text='Username', corner_radius=20, height=40, width=200, border_width=0)
+    username.pack()
+    password = ctk.CTkEntry(master=placeholder, placeholder_text='Password', corner_radius=20, height=40, width=200, border_width=0,show='*')
+    password.pack(pady=10)
+
+    def check_user():
+        username1 = username.get()
+        password1= password.get()
+        cursor.execute('SELECT PASSWORD FROM LOGIN_INFO WHERE USERNAME=%s;',(username1,))
+        sqlusername= cursor.fetchall()
+        for i in sqlusername:
+            for j in i:
+                if j==password1:
+                    print('LOGIN SUCESSFUl')
+                    home_page()
+
+
+    login_button = ctk.CTkButton(master=placeholder, text='Login', fg_color='#7a461d', width=200, height=40, corner_radius=20,command=check_user)
+    login_button.pack(pady=5)
+    signup_button = ctk.CTkButton(master=placeholder, text='Signup', fg_color='#7a461d', width=200, height=40,
+                                 corner_radius=20, command=sign_up)
+    signup_button.pack(pady=5)
+
+
+def sign_up():
+    loginpage.destroy()
+    signuppage = ctk.CTkFrame(master=window, fg_color='#f79e59')
+    signuppage.pack(expand=True, fill='both')
+    placeholder = ctk.CTkFrame(signuppage, fg_color='#ffffff')
+    placeholder.pack(expand=True)
+    Username = ctk.CTkEntry(master=placeholder, placeholder_text='Username', corner_radius=20, height=40, width=200,
+                            border_width=0,fg_color='#c2c8d1')
+    Username.pack(pady=5)
+    Email = ctk.CTkEntry(master=placeholder, placeholder_text='Email', corner_radius=20, height=40, width=200,
+                            border_width=0)
+    Email.pack(pady=5)
+    password = ctk.CTkEntry(master=placeholder, placeholder_text='Password', corner_radius=20, height=40, width=200,
+                            border_width=0,show="*")
+    password.pack(pady=5)
+    phno = ctk.CTkEntry(master=placeholder, placeholder_text='Phone Number', corner_radius=20, height=40, width=200,
+                            border_width=0)
+    phno.pack(pady=5)
+    def sign_up():
+        username1 = Username.get()
+        password1 = password.get()
+        Email1 = Email.get()
+        phno1 = int(phno.get())
+        cursor.execute('INSERT INTO USER_INFO VALUES(%s,%s,%s,%s);', (username1,password1,Email1,phno1,))
+        cursor.execute('INSERT INTO LOGIN_INFO VALUES(%s,%s);', (username1, password1,))
+        conn.commit()
+        print('values added')
+    def combine():
+        sign_up()
+        login_page()
+        signuppage.destroy()
+    signup_button = ctk.CTkButton(master=placeholder, text='Signup', fg_color='#7a461d', width=200, height=40,
+                                 corner_radius=20,command=combine)
+    signup_button.pack(pady=5)
+
+def home_page():
+    loginpage.destroy()
+    homepage = ctk.CTkFrame(master=window, fg_color='#86aae4')
+    homepage.pack(expand=True,fill='both')
+    header=ctk.CTkFrame(master=homepage,fg_color='#0000a3',height=100)
+    header.pack(side='top',fill='both',padx=0,pady=0)
+    header.pack_propagate(False)
+    home_button = ctk.CTkButton(master=header, text='Home', fg_color='#0000a3', width=100, height=40,
+                                  corner_radius=10,font=('ariel',20,'bold'))
+    flights = ctk.CTkButton(master=header, text='Flights', fg_color='#0000a3', width=100, height=40,
+                                corner_radius=10, font=('ariel', 20, 'bold'))
+    hotel= ctk.CTkButton(master=header, text='Hotel', fg_color='#0000a3', width=100, height=40,
+                                corner_radius=10, font=('ariel', 20, 'bold'))
+    packages = ctk.CTkButton(master=header, text='Packages', fg_color='#0000a3', width=100, height=40,
+                                corner_radius=10, font=('ariel', 20, 'bold'))
+    name = ctk.CTkButton(master=header, text='TRAVEL SYSTEM', fg_color='#0000a3', width=90, height=40,
+                             corner_radius=10, font=('ariel', 20, 'bold'))
+    name.pack(side='left',pady=30)
+    home_button.grid(row=0, column=0, padx=20, pady=20)
+    flights.grid(row=0, column=1, padx=20, pady=20)
+    hotel.grid(row=0, column=2, padx=20, pady=20)
+    packages.grid(row=0, column=3, padx=20, pady=20)
+
+
+login_page()
+window.mainloop()

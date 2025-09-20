@@ -58,22 +58,26 @@ def login_page():
 
 def sign_up():
     loginpage.destroy()
-    signuppage = ctk.CTkFrame(master=window, fg_color='#f79e59')
+    signuppage = ctk.CTkFrame(master=window, fg_color='#d7d9d7')
     signuppage.pack(expand=True, fill='both')
-    placeholder = ctk.CTkFrame(signuppage, fg_color='#ffffff')
+    placeholder = ctk.CTkFrame(signuppage, fg_color='#ffffff',height=300,width=300,corner_radius=30)
+    placeholder.pack_propagate(False)
     placeholder.pack(expand=True)
-    Username = ctk.CTkEntry(master=placeholder, placeholder_text='Username', corner_radius=20, height=40, width=200,
+    placeholder2=ctk.CTkFrame(placeholder,fg_color='#ffffff')
+    placeholder2.pack(pady=20)
+
+    Username = ctk.CTkEntry(master=placeholder2, placeholder_text='Username', corner_radius=20, height=40, width=200,
                             border_width=0,fg_color='#c2c8d1')
-    Username.pack(pady=5)
-    Email = ctk.CTkEntry(master=placeholder, placeholder_text='Email', corner_radius=20, height=40, width=200,
-                            border_width=0)
-    Email.pack(pady=5)
-    password = ctk.CTkEntry(master=placeholder, placeholder_text='Password', corner_radius=20, height=40, width=200,
-                            border_width=0,show="*")
-    password.pack(pady=5)
-    phno = ctk.CTkEntry(master=placeholder, placeholder_text='Phone Number', corner_radius=20, height=40, width=200,
-                            border_width=0)
-    phno.pack(pady=5)
+    Username.pack(pady=5,anchor='center')
+    Email = ctk.CTkEntry(master=placeholder2, placeholder_text='Email', corner_radius=20, height=40, width=200,
+                            border_width=0,fg_color='#c2c8d1')
+    Email.pack(pady=5,anchor='center')
+    password = ctk.CTkEntry(master=placeholder2, placeholder_text='Password', corner_radius=20, height=40, width=200,
+                            border_width=0,show="*",fg_color='#c2c8d1')
+    password.pack(pady=5,anchor='center')
+    phno = ctk.CTkEntry(master=placeholder2, placeholder_text='Phone Number', corner_radius=20, height=40, width=200,
+                            border_width=0,fg_color='#c2c8d1')
+    phno.pack(pady=5,anchor='center')
     def sign_up():
         username1 = Username.get()
         password1 = password.get()
@@ -87,9 +91,9 @@ def sign_up():
         sign_up()
         login_page()
         signuppage.destroy()
-    signup_button = ctk.CTkButton(master=placeholder, text='Signup', fg_color='#3434e3', width=200, height=40,
+    signup_button = ctk.CTkButton(master=placeholder2, text='Signup', fg_color='#3434e3', width=200, height=40,
                                  corner_radius=20,command=combine)
-    signup_button.pack(pady=5)
+    signup_button.pack(pady=10)
 
 def home_page():
     loginpage.destroy()

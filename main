@@ -96,6 +96,8 @@ def sign_up():
     signup_button.pack(pady=10)
 
 def home_page():
+    global homepage
+    global homepagedestroyer
     loginpage.destroy()
     homepage = ctk.CTkFrame(master=window, fg_color='#ffffff')
     homepage.pack(expand=True,fill='both')
@@ -106,9 +108,9 @@ def home_page():
     home_button = ctk.CTkButton(master=invisi, text='Home', fg_color='#3434e3', width=100, height=40,
                                   corner_radius=10,font=('ariel',20,'bold'))
     flights = ctk.CTkButton(master=invisi, text='Flights', fg_color='#3434e3', width=100, height=40,
-                                corner_radius=10, font=('ariel', 20, 'bold'))
-    hotel= ctk.CTkButton(master=invisi, text='Hotel', fg_color='#3434e3', width=100, height=40,
-                                corner_radius=10, font=('ariel', 20, 'bold'))
+                                corner_radius=10, font=('ariel', 20, 'bold'),command=flights_page)
+    Tracking= ctk.CTkButton(master=invisi, text='Tracking', fg_color='#3434e3', width=100, height=40,
+                                corner_radius=10, font=('ariel', 20, 'bold'),command=tracking_page)
     packages = ctk.CTkButton(master=invisi, text='Packages', fg_color='#3434e3', width=100, height=40,
                                 corner_radius=10, font=('ariel', 20, 'bold'))
     name = ctk.CTkButton(master=header, text='TRAVEL SYSTEM', fg_color='#3434e3', width=90, height=40,
@@ -117,7 +119,7 @@ def home_page():
     name.pack(side='left',pady=30)
     home_button.pack(anchor='center',side='left')
     flights.pack(anchor='center',side='left')
-    hotel.pack(anchor='center',side='left')
+    Tracking.pack(anchor='center',side='left')
     packages.pack(anchor='center',side='left')
 
     search_frame=ctk.CTkFrame(master=homepage,fg_color='#ffffff')
@@ -127,6 +129,74 @@ def home_page():
     search_flight_entry.pack(side='left')
     search_flight_button=ctk.CTkButton(master=search_frame,text="SEARCH",fg_color='#3434e3',height=50,corner_radius=40,font=('ariel', 15))
     search_flight_button.pack(padx=5,side='right')
+    if flightpagedestroyer is True:
+        flightpage.destroy()
+    elif trackingpagedestroyer is True:
+        trackingpage.destroy()
+    homepagedestroyer=True
+
+def flights_page():
+    global flightpagedestroyer
+    global flightpage
+    if homepagedestroyer is True:
+        homepage.destroy()
+    elif trackingpagedestroyer is True:
+        trackingpage.destroy()
+    flightpage = ctk.CTkFrame(master=window, fg_color='#ffffff')
+    flightpage.pack(expand=True,fill='both')
+    header=ctk.CTkFrame(master=flightpage,fg_color='#3434e3',height=100)
+    header.pack(side='top',fill='both',padx=0,pady=0)
+    header.pack_propagate(False)
+    invisi = ctk.CTkFrame(master=header,fg_color='#3434e3')
+    home_button = ctk.CTkButton(master=invisi, text='Home', fg_color='#3434e3', width=100, height=40,
+                                  corner_radius=10,font=('ariel',20,'bold'),command=home_page)
+    flights = ctk.CTkButton(master=invisi, text='Flights', fg_color='#3434e3', width=100, height=40,
+                                corner_radius=10, font=('ariel', 20, 'bold'))
+    Tracking= ctk.CTkButton(master=invisi, text='Tracking', fg_color='#3434e3', width=100, height=40,
+                                corner_radius=10, font=('ariel', 20, 'bold'))
+    packages = ctk.CTkButton(master=invisi, text='Packages', fg_color='#3434e3', width=100, height=40,
+                                corner_radius=10, font=('ariel', 20, 'bold'))
+    name = ctk.CTkButton(master=header, text='TRAVEL SYSTEM', fg_color='#3434e3', width=90, height=40,
+                             corner_radius=10, font=('ariel', 20, 'bold'))
+    invisi.pack(pady=25)
+    name.pack(side='left',pady=30)
+    home_button.pack(anchor='center',side='left')
+    flights.pack(anchor='center',side='left')
+    Tracking.pack(anchor='center',side='left')
+    packages.pack(anchor='center',side='left')
+    flightpagedestroyer=True
+def tracking_page():
+    if homepagedestroyer is True:
+        homepage.destroy()
+    elif flightpagedestroyer is True:
+        flightpage.destroy()
+    global trackingpage
+    global trackingpagedestroyer
+    trackingpage = ctk.CTkFrame(master=window, fg_color='#ffffff')
+    trackingpage.pack(expand=True, fill='both')
+    header = ctk.CTkFrame(master=trackingpage, fg_color='#3434e3', height=100)
+    header.pack(side='top', fill='both', padx=0, pady=0)
+    header.pack_propagate(False)
+    invisi = ctk.CTkFrame(master=header, fg_color='#3434e3')
+    home_button = ctk.CTkButton(master=invisi, text='Home', fg_color='#3434e3', width=100, height=40,
+                                corner_radius=10, font=('ariel', 20, 'bold'))
+    flights = ctk.CTkButton(master=invisi, text='Flights', fg_color='#3434e3', width=100, height=40,
+                            corner_radius=10, font=('ariel', 20, 'bold'))
+    Tracking = ctk.CTkButton(master=invisi, text='Tracking', fg_color='#3434e3', width=100, height=40,
+                             corner_radius=10, font=('ariel', 20, 'bold'))
+    packages = ctk.CTkButton(master=invisi, text='Packages', fg_color='#3434e3', width=100, height=40,
+                             corner_radius=10, font=('ariel', 20, 'bold'))
+    name = ctk.CTkButton(master=header, text='TRAVEL SYSTEM', fg_color='#3434e3', width=90, height=40,
+                         corner_radius=10, font=('ariel', 20, 'bold'))
+    invisi.pack(pady=25)
+    name.pack(side='left', pady=30)
+    home_button.pack(anchor='center', side='left')
+    flights.pack(anchor='center', side='left')
+    Tracking.pack(anchor='center', side='left')
+    packages.pack(anchor='center', side='left')
+    trackingpagedestroyer = True
+
+
 
 
 login_page()

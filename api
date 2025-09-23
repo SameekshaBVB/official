@@ -1,0 +1,25 @@
+import requests
+import json
+def get_flight_by_callsign(callsign):
+    url = "https://opensky-network.org/api/states/all"
+    response = requests.get(url)
+    data = response.json()
+    all_flights = data['states']
+    results = []
+    for flight in all_flights:
+        if flight[1] and flight[1].strip() == callsign.strip():
+            flight_data = {
+                'icao24': flight[0],
+                'callsign': flight[1],
+                'longitude': flight[5],
+                'latitude': flight[6],
+                'altitude': flight[7],
+                'on_ground': flight[8],
+                'velocity': flight[9]
+            }
+            results.append(flight_data)
+    return results
+
+callsign_to_search = "AXB681  "
+flightvalues = get_flight_by_callsign(callsign_to_search)
+print(flightvalues)

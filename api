@@ -1,25 +1,309 @@
+import customtkinter as ctk
+import mysql.connector as sql
+import tkintermapview
 import requests
 import json
-def get_flight_by_callsign(callsign):
-    url = "https://opensky-network.org/api/states/all"
-    response = requests.get(url)
-    data = response.json()
-    all_flights = data['states']
-    results = []
-    for flight in all_flights:
-        if flight[1] and flight[1].strip() == callsign.strip():
-            flight_data = {
-                'icao24': flight[0],
-                'callsign': flight[1],
-                'longitude': flight[5],
-                'latitude': flight[6],
-                'altitude': flight[7],
-                'on_ground': flight[8],
-                'velocity': flight[9]
-            }
-            results.append(flight_data)
-    return results
+from tkinter import messagebox
+window = ctk.CTk()
+window.geometry('600x400')
+window.title("TRAVEL SYSTEM")
 
-callsign_to_search = "AXB681  "
-flightvalues = get_flight_by_callsign(callsign_to_search)
-print(flightvalues)
+
+conn = sql.connect(
+    host='localhost',
+    user='root',
+    password='root',
+    use_pure=True,
+    charset='utf8'
+)
+cursor = conn.cursor()
+
+
+cursor.execute('CREATE DATABASE IF NOT EXISTS TRAVEL_SYSTEM;')
+cursor.execute('USE TRAVEL_SYSTEM;')
+cursor.execute('CREATE TABLE IF NOT EXISTS LOGIN_INFO (USERNAME VARCHAR(50),PASSWORD VARCHAR(50));')
+cursor.execute('CREATE TABLE IF NOT EXISTS USER_INFO (USERNAME VARCHAR(50),PASSWORD VARCHAR(50),EMAIL VARCHAR(50),PHNO INT(12));')
+
+destroyer=''
+
+
+
+def login_page():
+    global loginpage
+    loginpage = ctk.CTkFrame(master=window, fg_color='#d7d9d7')
+    loginpage.pack(expand=True, fill='both')
+    placeholder = ctk.CTkFrame(loginpage, fg_color='#ffffff',height=300,width=300,corner_radius=30)
+    placeholder.pack_propagate(False)
+    placeholder.pack(expand=True)
+    placeholder2=ctk.CTkFrame(placeholder, fg_color='#ffffff')
+    placeholder2.pack(pady=45)
+    username = ctk.CTkEntry(master=placeholder2, placeholder_text='Username', corner_radius=20, height=40, width=200, border_width=0,fg_color='#d7d9d7',text_color='#000000')
+    username.pack(anchor='center')
+    password = ctk.CTkEntry(master=placeholder2, placeholder_text='Password', corner_radius=20, height=40, width=200, border_width=0,show='*',fg_color='#d7d9d7',text_color='#000000')
+    password.pack(pady=10,anchor='center')
+
+    def check_user():
+        username1 = username.get()
+        password1= password.get()
+        cursor.execute('SELECT PASSWORD FROM LOGIN_INFO WHERE USERNAME=%s;',(username1,))
+        sqlusername= cursor.fetchall()
+        for i in sqlusername:
+            for j in i:
+                if j==password1:
+                    print('LOGIN SUCESSFUl')
+                    home_page()
+
+
+    login_button = ctk.CTkButton(master=placeholder2, text='Login', fg_color='#3434e3', width=200, height=40, corner_radius=20,command=check_user)
+    login_button.pack(pady=5)
+    signup_button = ctk.CTkButton(master=placeholder2, text='Signup', fg_color='#3434e3', width=200, height=40,
+                                 corner_radius=20, command=sign_up)
+    signup_button.pack(pady=5)
+
+
+def sign_up():
+    loginpage.destroy()
+    signuppage = ctk.CTkFrame(master=window, fg_color='#d7d9d7')
+    signuppage.pack(expand=True, fill='both')
+    placeholder = ctk.CTkFrame(signuppage, fg_color='#ffffff',height=300,width=300,corner_radius=30)
+    placeholder.pack_propagate(False)
+    placeholder.pack(expand=True)
+    placeholder2=ctk.CTkFrame(placeholder,fg_color='#ffffff')
+    placeholder2.pack(pady=20)
+
+    Username = ctk.CTkEntry(master=placeholder2, placeholder_text='Username', corner_radius=20, height=40, width=200,
+                            border_width=0,fg_color='#c2c8d1')
+    Username.pack(pady=5,anchor='center')
+    Email = ctk.CTkEntry(master=placeholder2, placeholder_text='Email', corner_radius=20, height=40, width=200,
+                            border_width=0,fg_color='#c2c8d1')
+    Email.pack(pady=5,anchor='center')
+    password = ctk.CTkEntry(master=placeholder2, placeholder_text='Password', corner_radius=20, height=40, width=200,
+                            border_width=0,show="*",fg_color='#c2c8d1')
+    password.pack(pady=5,anchor='center')
+    phno = ctk.CTkEntry(master=placeholder2, placeholder_text='Phone Number', corner_radius=20, height=40, width=200,
+                            border_width=0,fg_color='#c2c8d1')
+    phno.pack(pady=5,anchor='center')
+    def sign_up():
+        username1 = Username.get()
+        password1 = password.get()
+        Email1 = Email.get()
+        phno1 = int(phno.get())
+        cursor.execute('INSERT INTO USER_INFO VALUES(%s,%s,%s,%s);', (username1,password1,Email1,phno1,))
+        cursor.execute('INSERT INTO LOGIN_INFO VALUES(%s,%s);', (username1, password1,))
+        conn.commit()
+        print('values added')
+    def combine():
+        sign_up()
+        login_page()
+        signuppage.destroy()
+    signup_button = ctk.CTkButton(master=placeholder2, text='Signup', fg_color='#3434e3', width=200, height=40,
+                                 corner_radius=20,command=combine)
+    signup_button.pack(pady=10)
+
+def home_page():
+    global homepage
+    global destroyer
+    if destroyer=='Flights':
+        flightpage.destroy()
+    elif destroyer=='Tracking':
+        trackingpage.destroy()
+    elif destroyer == 'Account':
+        Accountpage.destroy()
+    loginpage.destroy()
+    homepage = ctk.CTkFrame(master=window, fg_color='#ffffff')
+    homepage.pack(expand=True,fill='both')
+    header=ctk.CTkFrame(master=homepage,fg_color='#3434e3',height=100)
+    header.pack(side='top',fill='both',padx=0,pady=0)
+    header.pack_propagate(False)
+    invisi = ctk.CTkFrame(master=header,fg_color='#3434e3')
+    home_button = ctk.CTkButton(master=invisi, text='Home', fg_color='#3434e3', width=100, height=40,
+                                  corner_radius=10,font=('ariel',20,'bold'))
+    flights = ctk.CTkButton(master=invisi, text='Flights', fg_color='#3434e3', width=100, height=40,
+                                corner_radius=10, font=('ariel', 20, 'bold'),command=flights_page)
+    Tracking= ctk.CTkButton(master=invisi, text='Tracking', fg_color='#3434e3', width=100, height=40,
+                                corner_radius=10, font=('ariel', 20, 'bold'),command=tracking_page)
+    Account = ctk.CTkButton(master=invisi, text='Account', fg_color='#3434e3', width=100, height=40,
+                                corner_radius=10, font=('ariel', 20, 'bold'),command=Account_page)
+    name = ctk.CTkButton(master=header, text='TRAVEL SYSTEM', fg_color='#3434e3', width=90, height=40,
+                             corner_radius=10, font=('ariel', 20, 'bold'))
+    invisi.pack(pady=25)
+    name.pack(side='left',pady=30)
+    home_button.pack(anchor='center',side='left')
+    flights.pack(anchor='center',side='left')
+    Tracking.pack(anchor='center',side='left')
+    Account.pack(anchor='center',side='left')
+
+    search_frame=ctk.CTkFrame(master=homepage,fg_color='#ffffff',width=650)
+    search_frame.pack_propagate(False)
+    search_frame.pack(expand=True)
+
+    search_flight_entry=ctk.CTkEntry(master=search_frame,placeholder_text='🔍Enter Destination',border_width=0,height=50,width=500,fg_color='#d7d9d7',corner_radius=40,text_color="#000000",font=('ariel', 15))
+    search_flight_entry.pack(side='left')
+    search_flight_button=ctk.CTkButton(master=search_frame,text="SEARCH",fg_color='#3434e3',height=50,corner_radius=40,font=('ariel', 15))
+    search_flight_button.pack(padx=5,side='right')
+
+    destroyer='Home'
+
+def flights_page():
+    global destroyer
+    global flightpage
+    if destroyer=='Home':
+        homepage.destroy()
+    elif destroyer=='Tracking':
+        trackingpage.destroy()
+    elif destroyer == 'Account':
+        Accountpage.destroy()
+    flightpage = ctk.CTkFrame(master=window, fg_color='#ffffff')
+    flightpage.pack(expand=True,fill='both')
+    header=ctk.CTkFrame(master=flightpage,fg_color='#3434e3',height=100)
+    header.pack(side='top',fill='both',padx=0,pady=0)
+    header.pack_propagate(False)
+    invisi = ctk.CTkFrame(master=header,fg_color='#3434e3')
+    home_button = ctk.CTkButton(master=invisi, text='Home', fg_color='#3434e3', width=100, height=40,
+                                  corner_radius=10,font=('ariel',20,'bold'),command=home_page)
+    flights = ctk.CTkButton(master=invisi, text='Flights', fg_color='#3434e3', width=100, height=40,
+                                corner_radius=10, font=('ariel', 20, 'bold'))
+    Tracking= ctk.CTkButton(master=invisi, text='Tracking', fg_color='#3434e3', width=100, height=40,
+                                corner_radius=10, font=('ariel', 20, 'bold'),command=tracking_page)
+    Account = ctk.CTkButton(master=invisi, text='Account', fg_color='#3434e3', width=100, height=40,
+                                corner_radius=10, font=('ariel', 20, 'bold'),command=Account_page)
+    name = ctk.CTkButton(master=header, text='TRAVEL SYSTEM', fg_color='#3434e3', width=90, height=40,
+                             corner_radius=10, font=('ariel', 20, 'bold'))
+    invisi.pack(pady=25)
+    name.pack(side='left',pady=30)
+    home_button.pack(anchor='center',side='left')
+    flights.pack(anchor='center',side='left')
+    Tracking.pack(anchor='center',side='left')
+    Account.pack(anchor='center',side='left')
+    destroyer='Flights'
+
+def tracking_page():
+    global trackingpage
+    global destroyer
+    if destroyer=='Home':
+        homepage.destroy()
+    elif destroyer=='Flights':
+        flightpage.destroy()
+    elif destroyer == 'Account':
+        Accountpage.destroy()
+    trackingpage = ctk.CTkFrame(master=window, fg_color='#ffffff')
+    trackingpage.pack(expand=True, fill='both')
+    header = ctk.CTkFrame(master=trackingpage, fg_color='#3434e3', height=100)
+    header.pack(side='top', fill='both', padx=0, pady=0)
+    header.pack_propagate(False)
+    invisi = ctk.CTkFrame(master=header, fg_color='#3434e3')
+    home_button = ctk.CTkButton(master=invisi, text='Home', fg_color='#3434e3', width=100, height=40,
+                                corner_radius=10, font=('ariel', 20, 'bold'), command=home_page)
+    flights = ctk.CTkButton(master=invisi, text='Flights', fg_color='#3434e3', width=100, height=40,
+                            corner_radius=10, font=('ariel', 20, 'bold'), command=flights_page)
+    Tracking = ctk.CTkButton(master=invisi, text='Tracking', fg_color='#3434e3', width=100, height=40,
+                             corner_radius=10, font=('ariel', 20, 'bold'))
+    Account = ctk.CTkButton(master=invisi, text='Account', fg_color='#3434e3', width=100, height=40,
+                             corner_radius=10, font=('ariel', 20, 'bold'),command=Account_page)
+    name = ctk.CTkButton(master=header, text='TRAVEL SYSTEM', fg_color='#3434e3', width=90, height=40,
+                         corner_radius=10, font=('ariel', 20, 'bold'))
+    invisi.pack(pady=25)
+    name.pack(side='left', pady=30)
+    home_button.pack(anchor='center', side='left')
+    flights.pack(anchor='center', side='left')
+    Tracking.pack(anchor='center', side='left')
+    Account.pack(anchor='center', side='left')
+    map_frame=ctk.CTkFrame(master=trackingpage,width=825,height=650)
+    map_frame.pack(anchor='w',pady=45,padx=30)
+    map_widget = tkintermapview.TkinterMapView(master=map_frame, width=1000, height=800, corner_radius=0)
+    map_widget.pack()
+    def plane_location():
+        global marker
+        call_sign=search_flight_entry.get()
+        def get_flight_by_callsign(callsign):
+            url = "https://opensky-network.org/api/states/all"
+            response = requests.get(url)
+            data = response.json()
+            all_flights = data['states']
+            results = []
+            for flight in all_flights:
+                if flight[1] and flight[1].strip() == callsign.strip():
+                    flight_data = {
+                        'icao24': flight[0],
+                        'callsign': flight[1],
+                        'longitude': flight[5],
+                        'latitude': flight[6],
+                        'altitude': flight[7],
+                        'on_ground': flight[8],
+                        'velocity': flight[9],
+                        'heading': flight[10]
+                    }
+                    results.append(flight_data)
+            return results
+        if len(call_sign) >= 8:
+            pass
+        else:
+            call_sign = call_sign + ' ' * (8 - len(call_sign))
+        flight_data=get_flight_by_callsign(call_sign)
+        if flight_data == []:
+                messagebox.showinfo("ERROR",'NO FLIGHT FOUND')
+        else:
+            flight=flight_data[0]
+            marker = map_widget.set_marker(flight['latitude'], flight['longitude'], text=flight['callsign'])
+            map_widget.set_position(flight['latitude'], flight['longitude'])
+            map_widget.set_zoom(6)
+    search_flight_entry=ctk.CTkEntry(master=trackingpage,placeholder_text='🔍Enter Callsign',border_width=0,height=50,width=520,fg_color='#d7d9d7',corner_radius=40,text_color="#000000",font=('ariel', 15))
+    search_flight_entry.place(x=850,y=150)
+    search_flight_button=ctk.CTkButton(master=trackingpage,text="SEARCH",fg_color='#3434e3',height=50,corner_radius=40,font=('ariel', 15),command=plane_location)
+    search_flight_button.place(x=1375,y=150)
+
+    data_frame=ctk.CTkFrame(master=trackingpage,fg_color='#d7d9d7',width=660,height=560)
+    data_frame.place(x=850,y=225)
+
+
+
+
+
+
+
+
+    destroyer = 'Tracking'
+def Account_page():
+    global Accountpage
+    global destroyer
+    if destroyer == 'Home':
+        homepage.destroy()
+    elif destroyer == 'Flights':
+        flightpage.destroy()
+    elif destroyer == 'Tracking':
+        trackingpage.destroy()
+    Accountpage = ctk.CTkFrame(master=window, fg_color='#ffffff')
+    Accountpage.pack(expand=True, fill='both')
+    header = ctk.CTkFrame(master=Accountpage, fg_color='#3434e3', height=100)
+    header.pack(side='top', fill='both', padx=0, pady=0)
+    header.pack_propagate(False)
+    invisi = ctk.CTkFrame(master=header, fg_color='#3434e3')
+    home_button = ctk.CTkButton(master=invisi, text='Home', fg_color='#3434e3', width=100, height=40,
+                                corner_radius=10, font=('ariel', 20, 'bold'), command=home_page)
+    flights = ctk.CTkButton(master=invisi, text='Flights', fg_color='#3434e3', width=100, height=40,
+                            corner_radius=10, font=('ariel', 20, 'bold'), command=flights_page)
+    Tracking = ctk.CTkButton(master=invisi, text='Tracking', fg_color='#3434e3', width=100, height=40,
+                             corner_radius=10, font=('ariel', 20, 'bold'),command=tracking_page)
+    Account = ctk.CTkButton(master=invisi, text='Account', fg_color='#3434e3', width=100, height=40,
+                            corner_radius=10, font=('ariel', 20, 'bold'))
+    name = ctk.CTkButton(master=header, text='TRAVEL SYSTEM', fg_color='#3434e3', width=90, height=40,
+                         corner_radius=10, font=('ariel', 20, 'bold'))
+    invisi.pack(pady=25)
+    name.pack(side='left', pady=30)
+    home_button.pack(anchor='center', side='left')
+    flights.pack(anchor='center', side='left')
+    Tracking.pack(anchor='center', side='left')
+    Account.pack(anchor='center', side='left')
+    user_display=ctk.CTkFrame(master=Accountpage,fg_color='#d7d9d7')
+    user_display.pack(pady=40,padx=20,anchor='w')
+
+
+
+
+    destroyer = 'Account'
+
+
+
+
+login_page()
+window.mainloop()

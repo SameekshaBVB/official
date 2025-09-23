@@ -1,7 +1,6 @@
 import customtkinter as ctk
 import mysql.connector as sql
 
-
 window = ctk.CTk()
 window.geometry('600x400')
 window.title("TRAVEL SYSTEM")
@@ -21,6 +20,9 @@ cursor.execute('CREATE DATABASE IF NOT EXISTS TRAVEL_SYSTEM;')
 cursor.execute('USE TRAVEL_SYSTEM;')
 cursor.execute('CREATE TABLE IF NOT EXISTS LOGIN_INFO (USERNAME VARCHAR(50),PASSWORD VARCHAR(50));')
 cursor.execute('CREATE TABLE IF NOT EXISTS USER_INFO (USERNAME VARCHAR(50),PASSWORD VARCHAR(50),EMAIL VARCHAR(50),PHNO INT(12));')
+
+destroyer=''
+
 
 
 def login_page():
@@ -97,7 +99,13 @@ def sign_up():
 
 def home_page():
     global homepage
-    global homepagedestroyer
+    global destroyer
+    if destroyer=='Flights':
+        flightpage.destroy()
+    elif destroyer=='Tracking':
+        trackingpage.destroy()
+    elif destroyer == 'Account':
+        Accountpage.destroy()
     loginpage.destroy()
     homepage = ctk.CTkFrame(master=window, fg_color='#ffffff')
     homepage.pack(expand=True,fill='both')
@@ -111,8 +119,8 @@ def home_page():
                                 corner_radius=10, font=('ariel', 20, 'bold'),command=flights_page)
     Tracking= ctk.CTkButton(master=invisi, text='Tracking', fg_color='#3434e3', width=100, height=40,
                                 corner_radius=10, font=('ariel', 20, 'bold'),command=tracking_page)
-    packages = ctk.CTkButton(master=invisi, text='Packages', fg_color='#3434e3', width=100, height=40,
-                                corner_radius=10, font=('ariel', 20, 'bold'))
+    Account = ctk.CTkButton(master=invisi, text='Account', fg_color='#3434e3', width=100, height=40,
+                                corner_radius=10, font=('ariel', 20, 'bold'),command=Account_page)
     name = ctk.CTkButton(master=header, text='TRAVEL SYSTEM', fg_color='#3434e3', width=90, height=40,
                              corner_radius=10, font=('ariel', 20, 'bold'))
     invisi.pack(pady=25)
@@ -120,28 +128,28 @@ def home_page():
     home_button.pack(anchor='center',side='left')
     flights.pack(anchor='center',side='left')
     Tracking.pack(anchor='center',side='left')
-    packages.pack(anchor='center',side='left')
+    Account.pack(anchor='center',side='left')
 
-    search_frame=ctk.CTkFrame(master=homepage,fg_color='#ffffff')
-    search_frame.pack(pady=20)
+    search_frame=ctk.CTkFrame(master=homepage,fg_color='#ffffff',width=650)
+    search_frame.pack_propagate(False)
+    search_frame.pack(expand=True)
 
     search_flight_entry=ctk.CTkEntry(master=search_frame,placeholder_text='🔍Enter Destination',border_width=0,height=50,width=500,fg_color='#d7d9d7',corner_radius=40,text_color="#000000",font=('ariel', 15))
     search_flight_entry.pack(side='left')
     search_flight_button=ctk.CTkButton(master=search_frame,text="SEARCH",fg_color='#3434e3',height=50,corner_radius=40,font=('ariel', 15))
     search_flight_button.pack(padx=5,side='right')
-    if flightpagedestroyer is True:
-        flightpage.destroy()
-    elif trackingpagedestroyer is True:
-        trackingpage.destroy()
-    homepagedestroyer=True
+
+    destroyer='Home'
 
 def flights_page():
-    global flightpagedestroyer
+    global destroyer
     global flightpage
-    if homepagedestroyer is True:
+    if destroyer=='Home':
         homepage.destroy()
-    elif trackingpagedestroyer is True:
+    elif destroyer=='Tracking':
         trackingpage.destroy()
+    elif destroyer == 'Account':
+        Accountpage.destroy()
     flightpage = ctk.CTkFrame(master=window, fg_color='#ffffff')
     flightpage.pack(expand=True,fill='both')
     header=ctk.CTkFrame(master=flightpage,fg_color='#3434e3',height=100)
@@ -153,9 +161,9 @@ def flights_page():
     flights = ctk.CTkButton(master=invisi, text='Flights', fg_color='#3434e3', width=100, height=40,
                                 corner_radius=10, font=('ariel', 20, 'bold'))
     Tracking= ctk.CTkButton(master=invisi, text='Tracking', fg_color='#3434e3', width=100, height=40,
-                                corner_radius=10, font=('ariel', 20, 'bold'))
-    packages = ctk.CTkButton(master=invisi, text='Packages', fg_color='#3434e3', width=100, height=40,
-                                corner_radius=10, font=('ariel', 20, 'bold'))
+                                corner_radius=10, font=('ariel', 20, 'bold'),command=tracking_page)
+    Account = ctk.CTkButton(master=invisi, text='Account', fg_color='#3434e3', width=100, height=40,
+                                corner_radius=10, font=('ariel', 20, 'bold'),command=Account_page)
     name = ctk.CTkButton(master=header, text='TRAVEL SYSTEM', fg_color='#3434e3', width=90, height=40,
                              corner_radius=10, font=('ariel', 20, 'bold'))
     invisi.pack(pady=25)
@@ -163,15 +171,18 @@ def flights_page():
     home_button.pack(anchor='center',side='left')
     flights.pack(anchor='center',side='left')
     Tracking.pack(anchor='center',side='left')
-    packages.pack(anchor='center',side='left')
-    flightpagedestroyer=True
+    Account.pack(anchor='center',side='left')
+    destroyer='Flights'
+
 def tracking_page():
-    if homepagedestroyer is True:
-        homepage.destroy()
-    elif flightpagedestroyer is True:
-        flightpage.destroy()
     global trackingpage
-    global trackingpagedestroyer
+    global destroyer
+    if destroyer=='Home':
+        homepage.destroy()
+    elif destroyer=='Flights':
+        flightpage.destroy()
+    elif destroyer == 'Account':
+        Accountpage.destroy()
     trackingpage = ctk.CTkFrame(master=window, fg_color='#ffffff')
     trackingpage.pack(expand=True, fill='both')
     header = ctk.CTkFrame(master=trackingpage, fg_color='#3434e3', height=100)
@@ -179,13 +190,13 @@ def tracking_page():
     header.pack_propagate(False)
     invisi = ctk.CTkFrame(master=header, fg_color='#3434e3')
     home_button = ctk.CTkButton(master=invisi, text='Home', fg_color='#3434e3', width=100, height=40,
-                                corner_radius=10, font=('ariel', 20, 'bold'))
+                                corner_radius=10, font=('ariel', 20, 'bold'), command=home_page)
     flights = ctk.CTkButton(master=invisi, text='Flights', fg_color='#3434e3', width=100, height=40,
-                            corner_radius=10, font=('ariel', 20, 'bold'))
+                            corner_radius=10, font=('ariel', 20, 'bold'), command=flights_page)
     Tracking = ctk.CTkButton(master=invisi, text='Tracking', fg_color='#3434e3', width=100, height=40,
                              corner_radius=10, font=('ariel', 20, 'bold'))
-    packages = ctk.CTkButton(master=invisi, text='Packages', fg_color='#3434e3', width=100, height=40,
-                             corner_radius=10, font=('ariel', 20, 'bold'))
+    Account = ctk.CTkButton(master=invisi, text='Account', fg_color='#3434e3', width=100, height=40,
+                             corner_radius=10, font=('ariel', 20, 'bold'),command=Account_page)
     name = ctk.CTkButton(master=header, text='TRAVEL SYSTEM', fg_color='#3434e3', width=90, height=40,
                          corner_radius=10, font=('ariel', 20, 'bold'))
     invisi.pack(pady=25)
@@ -193,8 +204,46 @@ def tracking_page():
     home_button.pack(anchor='center', side='left')
     flights.pack(anchor='center', side='left')
     Tracking.pack(anchor='center', side='left')
-    packages.pack(anchor='center', side='left')
-    trackingpagedestroyer = True
+    Account.pack(anchor='center', side='left')
+    destroyer = 'Tracking'
+def Account_page():
+    global Accountpage
+    global destroyer
+    if destroyer == 'Home':
+        homepage.destroy()
+    elif destroyer == 'Flights':
+        flightpage.destroy()
+    elif destroyer == 'Tracking':
+        trackingpage.destroy()
+    Accountpage = ctk.CTkFrame(master=window, fg_color='#ffffff')
+    Accountpage.pack(expand=True, fill='both')
+    header = ctk.CTkFrame(master=Accountpage, fg_color='#3434e3', height=100)
+    header.pack(side='top', fill='both', padx=0, pady=0)
+    header.pack_propagate(False)
+    invisi = ctk.CTkFrame(master=header, fg_color='#3434e3')
+    home_button = ctk.CTkButton(master=invisi, text='Home', fg_color='#3434e3', width=100, height=40,
+                                corner_radius=10, font=('ariel', 20, 'bold'), command=home_page)
+    flights = ctk.CTkButton(master=invisi, text='Flights', fg_color='#3434e3', width=100, height=40,
+                            corner_radius=10, font=('ariel', 20, 'bold'), command=flights_page)
+    Tracking = ctk.CTkButton(master=invisi, text='Tracking', fg_color='#3434e3', width=100, height=40,
+                             corner_radius=10, font=('ariel', 20, 'bold'))
+    Account = ctk.CTkButton(master=invisi, text='Account', fg_color='#3434e3', width=100, height=40,
+                            corner_radius=10, font=('ariel', 20, 'bold'))
+    name = ctk.CTkButton(master=header, text='TRAVEL SYSTEM', fg_color='#3434e3', width=90, height=40,
+                         corner_radius=10, font=('ariel', 20, 'bold'))
+    invisi.pack(pady=25)
+    name.pack(side='left', pady=30)
+    home_button.pack(anchor='center', side='left')
+    flights.pack(anchor='center', side='left')
+    Tracking.pack(anchor='center', side='left')
+    Account.pack(anchor='center', side='left')
+    user_display=ctk.CTkFrame(master=Accountpage,fg_color='#d7d9d7')
+    user_display.pack(pady=40,padx=20,anchor='w')
+
+
+
+
+    destroyer = 'Account'
 
 
 

@@ -2,8 +2,9 @@ import customtkinter as ctk
 import mysql.connector as sql
 import tkintermapview
 import requests
-import json
 from tkinter import messagebox
+
+
 window = ctk.CTk()
 window.geometry('600x400')
 window.title("TRAVEL SYSTEM")
@@ -51,7 +52,12 @@ def login_page():
             for j in i:
                 if j==password1:
                     print('LOGIN SUCESSFUl')
-                    home_page()
+                    if password1=='admin' and username1=='admin':
+                        print('ADMIN LOGIN')
+                        admin_pannel()
+                    else:
+                        home_page()
+
 
 
     login_button = ctk.CTkButton(master=placeholder2, text='Login', fg_color='#3434e3', width=200, height=40, corner_radius=20,command=check_user)
@@ -214,11 +220,13 @@ def tracking_page():
     map_widget.pack()
     def plane_location():
         global marker
+        global flight
         call_sign=search_flight_entry.get()
         def get_flight_by_callsign(callsign):
             url = "https://opensky-network.org/api/states/all"
             response = requests.get(url)
             data = response.json()
+            print(data)
             all_flights = data['states']
             results = []
             for flight in all_flights:
@@ -234,6 +242,7 @@ def tracking_page():
                         'heading': flight[10]
                     }
                     results.append(flight_data)
+            print(results)
             return results
         if len(call_sign) >= 8:
             pass
@@ -247,16 +256,30 @@ def tracking_page():
             marker = map_widget.set_marker(flight['latitude'], flight['longitude'], text=flight['callsign'])
             map_widget.set_position(flight['latitude'], flight['longitude'])
             map_widget.set_zoom(6)
+        data_frame = ctk.CTkFrame(master=trackingpage, fg_color='#d7d9d7', width=660, height=560)
+        data_frame.pack_propagate(False)
+        data_frame.place(x=850, y=225)
+        if flight == []:
+            pass
+        else:
+            text_info = "ICAO24:{}\nCallsign:{}\nLongitde:{}\nLatitude:{}\nAltitude:{}\nVelocity:{}\nHeading:{}".format(
+                flight['icao24'],
+                flight['callsign'],
+                flight['longitude'],
+                flight['latitude'],
+                flight['altitude'],
+                flight['velocity'],
+                flight['heading'])
+            data_label = ctk.CTkLabel(master=data_frame, text=text_info,
+                                      text_color="black", font=("Arial", 25),justify='left')
+
+            data_label.pack(anchor='nw',pady=20,padx=20)
+
+
     search_flight_entry=ctk.CTkEntry(master=trackingpage,placeholder_text='🔍Enter Callsign',border_width=0,height=50,width=520,fg_color='#d7d9d7',corner_radius=40,text_color="#000000",font=('ariel', 15))
     search_flight_entry.place(x=850,y=150)
     search_flight_button=ctk.CTkButton(master=trackingpage,text="SEARCH",fg_color='#3434e3',height=50,corner_radius=40,font=('ariel', 15),command=plane_location)
     search_flight_button.place(x=1375,y=150)
-
-    data_frame=ctk.CTkFrame(master=trackingpage,fg_color='#d7d9d7',width=660,height=560)
-    data_frame.place(x=850,y=225)
-
-
-
 
 
 
@@ -296,13 +319,14 @@ def Account_page():
     Account.pack(anchor='center', side='left')
     user_display=ctk.CTkFrame(master=Accountpage,fg_color='#d7d9d7')
     user_display.pack(pady=40,padx=20,anchor='w')
-
-
-
-
     destroyer = 'Account'
 
-
+def admin_pannel():
+    loginpage.destroy()
+    adminframe=ctk.CTkFrame(master=window,fg_color='#ffffff')
+    adminframe.pack(expand=True,fill='both')
+    central_frame=ctk.CTkFrame(master=adminframe,fg_color='#d7d9d7')
+    central_frame.pack(pady=30)
 
 
 login_page()

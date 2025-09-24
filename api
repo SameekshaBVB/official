@@ -147,6 +147,17 @@ def home_page():
     search_flight_entry.pack(side='left')
     search_flight_button=ctk.CTkButton(master=search_frame,text="SEARCH",fg_color='#3434e3',height=50,corner_radius=40,font=('ariel', 15))
     search_flight_button.pack(padx=5,side='right')
+    def ai():
+        ai_frame=ctk.CTkFrame(master=homepage,corner_radius=20,fg_color='#d7d9d7',height=300,width=250)
+        ai_frame.pack_propagate(False)
+        ai_frame.place(x=1200,y=525)
+        ai_entry=ctk.CTkEntry(master=ai_frame,width=200,corner_radius=30)
+        ai_entry.place(x=5,y=265)
+        ai_entry_button=ctk.CTkButton(master=ai_frame,width=30,text='🚀',corner_radius=30)
+        ai_entry_button.place(x=205,y=265)
+    ai_button = ctk.CTkButton(master=homepage, corner_radius=1000,height=50,width=50,fg_color='#3434e3',text='AI',command=ai)
+    ai_button.pack(anchor='ne', side='bottom',pady=10,padx=10)
+
 
     destroyer='Home'
 

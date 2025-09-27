@@ -4,7 +4,6 @@ import tkintermapview
 import requests
 from tkinter import messagebox
 
-
 window = ctk.CTk()
 window.geometry('600x400')
 window.title("TRAVEL SYSTEM")
@@ -110,12 +109,13 @@ def home_page():
     global homepage
     global destroyer
     if destroyer=='Flights':
-        flightpage.destroy()
+        myflightpage.destroy()
     elif destroyer=='Tracking':
         trackingpage.destroy()
     elif destroyer == 'Account':
         Accountpage.destroy()
     loginpage.destroy()
+
     homepage = ctk.CTkFrame(master=window, fg_color='#ffffff')
     homepage.pack(expand=True,fill='both')
     header=ctk.CTkFrame(master=homepage,fg_color='#3434e3',height=100)
@@ -124,8 +124,8 @@ def home_page():
     invisi = ctk.CTkFrame(master=header,fg_color='#3434e3')
     home_button = ctk.CTkButton(master=invisi, text='Home', fg_color='#3434e3', width=100, height=40,
                                   corner_radius=10,font=('ariel',20,'bold'))
-    flights = ctk.CTkButton(master=invisi, text='Flights', fg_color='#3434e3', width=100, height=40,
-                                corner_radius=10, font=('ariel', 20, 'bold'),command=flights_page)
+    flights = ctk.CTkButton(master=invisi, text='My Flights', fg_color='#3434e3', width=100, height=40,
+                                corner_radius=10, font=('ariel', 20, 'bold'),command=my_flights_page)
     Tracking= ctk.CTkButton(master=invisi, text='Tracking', fg_color='#3434e3', width=100, height=40,
                                 corner_radius=10, font=('ariel', 20, 'bold'),command=tracking_page)
     Account = ctk.CTkButton(master=invisi, text='Account', fg_color='#3434e3', width=100, height=40,
@@ -138,47 +138,183 @@ def home_page():
     flights.pack(anchor='center',side='left')
     Tracking.pack(anchor='center',side='left')
     Account.pack(anchor='center',side='left')
+    search_section = ctk.CTkFrame(master=homepage, fg_color='#ffffff', height=70)
+    search_section.pack(fill='x', pady=10, padx=10)
+    search_section.pack_propagate(False)
+    invis_frame = ctk.CTkFrame(master=search_section, fg_color='#ffffff')
+    invis_frame.pack(side='left', anchor='w')
+    from_entry = ctk.CTkEntry(master=invis_frame, fg_color='#c2c8d1', corner_radius=30,
+                              placeholder_text='From', border_width=0, height=50, width=150,
+                              font=('ariel', 15))
+    from_entry.pack(side='left', padx=(0, 5))
+    to_entry = ctk.CTkEntry(master=invis_frame, fg_color='#c2c8d1', corner_radius=30,
+                            placeholder_text='To', border_width=0, height=50, width=150,
+                            font=('ariel', 15))
+    to_entry.pack(side='left', padx=5)
+    date = ctk.CTkEntry(master=invis_frame, fg_color='#c2c8d1', corner_radius=30,
+                        placeholder_text='Date(dd/mm/yyyy)', border_width=0, height=50,
+                        width=200, font=('ariel', 15))
+    date.pack(side='left', padx=5)
+    invis_frame2 = ctk.CTkFrame(master=search_section, fg_color='#ffffff')
+    invis_frame2.pack(side='right', anchor='e')
 
-    search_frame=ctk.CTkFrame(master=homepage,fg_color='#ffffff',width=650)
-    search_frame.pack_propagate(False)
-    search_frame.pack(expand=True)
+    def search_flights(from_city, to_city, date, scroll_frame):
+        for widget in scroll_frame.winfo_children():
+            widget.destroy()
 
-    search_flight_entry=ctk.CTkEntry(master=search_frame,placeholder_text='🔍Enter Destination',border_width=0,height=50,width=500,fg_color='#d7d9d7',corner_radius=40,text_color="#000000",font=('ariel', 15))
-    search_flight_entry.pack(side='left')
-    search_flight_button=ctk.CTkButton(master=search_frame,text="SEARCH",fg_color='#3434e3',height=50,corner_radius=40,font=('ariel', 15))
-    search_flight_button.pack(padx=5,side='right')
-    def ai():
-        ai_frame=ctk.CTkFrame(master=homepage,corner_radius=20,fg_color='#d7d9d7',height=300,width=250)
-        ai_frame.pack_propagate(False)
-        ai_frame.place(x=1200,y=525)
-        ai_entry=ctk.CTkEntry(master=ai_frame,width=200,corner_radius=30)
-        ai_entry.place(x=5,y=265)
-        ai_entry_button=ctk.CTkButton(master=ai_frame,width=30,text='🚀',corner_radius=30)
-        ai_entry_button.place(x=205,y=265)
-    ai_button = ctk.CTkButton(master=homepage, corner_radius=1000,height=50,width=50,fg_color='#3434e3',text='AI',command=ai)
-    ai_button.pack(anchor='ne', side='bottom',pady=10,padx=10)
+        try:
+            query = '''SELECT FLIGHT_ID, AIRLINE, FROM_CITY, TO_CITY, DEPARTURE_TIME, 
+                       ARRIVAL_TIME, FLIGHT_DATE, AVAILABLE_SEATS, PRICE, AIRCRAFT_TYPE 
+                       FROM FLIGHTS WHERE FROM_CITY LIKE %s AND TO_CITY LIKE %s'''
+
+            params = [f'%{from_city}%', f'%{to_city}%']
+            if date.strip():
+                query += ' AND FLIGHT_DATE = %s'
+                params.append(date)
+
+            cursor.execute(query, params)
+            flights = cursor.fetchall()
+
+            if not flights:
+                no_results = ctk.CTkLabel(
+                    master=scroll_frame,
+                    text="No flights found matching your search criteria.",
+                    font=('Arial', 16),
+                    text_color='#666666'
+                )
+                no_results.pack(pady=20)
+                return
+            for flight in flights:
+                flight_id, airline, from_loc, to_loc, dep_time, arr_time, flight_date, available_seats, price, aircraft = flight
+                flight_card = ctk.CTkFrame(
+                    master=scroll_frame,
+                    fg_color='#ffffff',
+                    corner_radius=15,
+                    border_width=2,
+                    border_color='#e0e0e0'
+                )
+                flight_card.pack(fill='x', pady=10, padx=20)
+                header_frame = ctk.CTkFrame(master=flight_card, fg_color='#f8f9fa', corner_radius=10)
+                header_frame.pack(fill='x', pady=10, padx=15)
+
+                airline_label = ctk.CTkLabel(
+                    master=header_frame,
+                    text=f"{airline} - {flight_id}",
+                    font=('Arial', 18, 'bold'),
+                    text_color='#2c3e50'
+                )
+                airline_label.pack(side='left', pady=10, padx=10)
+
+                aircraft_label = ctk.CTkLabel(
+                    master=header_frame,
+                    text=f"Aircraft: {aircraft}",
+                    font=('Arial', 12),
+                    text_color='#7f8c8d'
+                )
+                aircraft_label.pack(side='right', pady=10, padx=10)
+                details_frame = ctk.CTkFrame(master=flight_card, fg_color='transparent')
+                details_frame.pack(fill='x', pady=5, padx=15)
+                route_frame = ctk.CTkFrame(master=details_frame, fg_color='transparent')
+                route_frame.pack(fill='x', pady=5)
+                route_text = f"{from_loc} → {to_loc}"
+                route_label = ctk.CTkLabel(
+                    master=route_frame,
+                    text=route_text,
+                    font=('Arial', 16, 'bold'),
+                    text_color='#34495e'
+                )
+                route_label.pack(side='left')
+                date_label = ctk.CTkLabel(
+                    master=route_frame,
+                    text=f"Date: {flight_date}",
+                    font=('Arial', 14),
+                    text_color='#7f8c8d'
+                )
+                date_label.pack(side='right')
+                info_frame = ctk.CTkFrame(master=details_frame, fg_color='transparent')
+                info_frame.pack(fill='x', pady=5)
+                time_text = f"Departure: {dep_time} | Arrival: {arr_time}"
+                time_label = ctk.CTkLabel(
+                    master=info_frame,
+                    text=time_text,
+                    font=('Arial', 14),
+                    text_color='#2c3e50'
+                )
+                time_label.pack(side='left')
+                seats_label = ctk.CTkLabel(
+                    master=info_frame,
+                    text=f"Available Seats: {available_seats}",
+                    font=('Arial', 14),
+                    text_color='#27ae60' if available_seats > 0 else '#e74c3c'
+                )
+                seats_label.pack(side='right')
+                bottom_frame = ctk.CTkFrame(master=flight_card, fg_color='transparent')
+                bottom_frame.pack(fill='x', pady=10, padx=15)
+
+                price_label = ctk.CTkLabel(
+                    master=bottom_frame,
+                    text=f"₹{price:.2f}",
+                    font=('Arial', 20, 'bold'),
+                    text_color='#e67e22'
+                )
+                price_label.pack(side='left')
+                def book_button_screen():
+                    update_query = "UPDATE FLIGHTS SET AVAILABLE_SEATS=AVAILABLE_SEATS-1 WHERE FLIGHT_ID=%s AND AIRLINE=%s"
+                    cursor.execute(update_query, (flight_id, airline))
+                    conn.commit()
+                    messagebox.showinfo("SUCCESS", f'Booking confirmed for flight {flight_id}!')
 
 
-    destroyer='Home'
+                if available_seats > 0:
+                    book_button = ctk.CTkButton(
+                        master=bottom_frame,
+                        text="Book Now",
+                        fg_color='#3434e3',
+                        hover_color='#2929cc',
+                        corner_radius=20,
+                        font=('Arial', 14, 'bold'),
+                        command=book_button_screen
+                    )
+                    book_button.pack(side='right', padx=(10, 0))
+                else:
+                    sold_out_label = ctk.CTkLabel(
+                        master=bottom_frame,
+                        text="SOLD OUT",
+                        font=('Arial', 14, 'bold'),
+                        text_color='#e74c3c'
+                    )
+                    sold_out_label.pack(side='right')
 
-def flights_page():
+        except:
+            pass
+
+    scroll_frame = ctk.CTkScrollableFrame(master=homepage, fg_color='#f0f0f0')
+    scroll_frame.pack(expand=True, fill='both', pady=(0, 10), padx=10)
+    search_flight = ctk.CTkButton(master=invis_frame2, text='Search', fg_color='#3434e3',
+                                  height=50, width=150, corner_radius=30, font=('ariel', 15),command=search_flights(from_entry.get(), to_entry.get(), date.get(), scroll_frame))
+    search_flight.pack()
+
+    destroyer = 'Home'
+
+
+def my_flights_page():
     global destroyer
-    global flightpage
+    global myflightpage
     if destroyer=='Home':
         homepage.destroy()
     elif destroyer=='Tracking':
         trackingpage.destroy()
     elif destroyer == 'Account':
         Accountpage.destroy()
-    flightpage = ctk.CTkFrame(master=window, fg_color='#ffffff')
-    flightpage.pack(expand=True,fill='both')
-    header=ctk.CTkFrame(master=flightpage,fg_color='#3434e3',height=100)
+    myflightpage = ctk.CTkFrame(master=window, fg_color='#ffffff')
+    myflightpage.pack(expand=True,fill='both')
+    header=ctk.CTkFrame(master=myflightpage,fg_color='#3434e3',height=100)
     header.pack(side='top',fill='both',padx=0,pady=0)
     header.pack_propagate(False)
     invisi = ctk.CTkFrame(master=header,fg_color='#3434e3')
     home_button = ctk.CTkButton(master=invisi, text='Home', fg_color='#3434e3', width=100, height=40,
                                   corner_radius=10,font=('ariel',20,'bold'),command=home_page)
-    flights = ctk.CTkButton(master=invisi, text='Flights', fg_color='#3434e3', width=100, height=40,
+    flights = ctk.CTkButton(master=invisi, text=' My Flights', fg_color='#3434e3', width=100, height=40,
                                 corner_radius=10, font=('ariel', 20, 'bold'))
     Tracking= ctk.CTkButton(master=invisi, text='Tracking', fg_color='#3434e3', width=100, height=40,
                                 corner_radius=10, font=('ariel', 20, 'bold'),command=tracking_page)
@@ -200,7 +336,7 @@ def tracking_page():
     if destroyer=='Home':
         homepage.destroy()
     elif destroyer=='Flights':
-        flightpage.destroy()
+        myflightpage.destroy()
     elif destroyer == 'Account':
         Accountpage.destroy()
     trackingpage = ctk.CTkFrame(master=window, fg_color='#ffffff')
@@ -211,8 +347,8 @@ def tracking_page():
     invisi = ctk.CTkFrame(master=header, fg_color='#3434e3')
     home_button = ctk.CTkButton(master=invisi, text='Home', fg_color='#3434e3', width=100, height=40,
                                 corner_radius=10, font=('ariel', 20, 'bold'), command=home_page)
-    flights = ctk.CTkButton(master=invisi, text='Flights', fg_color='#3434e3', width=100, height=40,
-                            corner_radius=10, font=('ariel', 20, 'bold'), command=flights_page)
+    flights = ctk.CTkButton(master=invisi, text='My Flights', fg_color='#3434e3', width=100, height=40,
+                            corner_radius=10, font=('ariel', 20, 'bold'), command=my_flights_page)
     Tracking = ctk.CTkButton(master=invisi, text='Tracking', fg_color='#3434e3', width=100, height=40,
                              corner_radius=10, font=('ariel', 20, 'bold'))
     Account = ctk.CTkButton(master=invisi, text='Account', fg_color='#3434e3', width=100, height=40,
@@ -291,11 +427,6 @@ def tracking_page():
     search_flight_entry.place(x=850,y=150)
     search_flight_button=ctk.CTkButton(master=trackingpage,text="SEARCH",fg_color='#3434e3',height=50,corner_radius=40,font=('ariel', 15),command=plane_location)
     search_flight_button.place(x=1375,y=150)
-
-
-
-
-
     destroyer = 'Tracking'
 def Account_page():
     global Accountpage
@@ -303,7 +434,7 @@ def Account_page():
     if destroyer == 'Home':
         homepage.destroy()
     elif destroyer == 'Flights':
-        flightpage.destroy()
+        myflightpage.destroy()
     elif destroyer == 'Tracking':
         trackingpage.destroy()
     Accountpage = ctk.CTkFrame(master=window, fg_color='#ffffff')
@@ -314,8 +445,8 @@ def Account_page():
     invisi = ctk.CTkFrame(master=header, fg_color='#3434e3')
     home_button = ctk.CTkButton(master=invisi, text='Home', fg_color='#3434e3', width=100, height=40,
                                 corner_radius=10, font=('ariel', 20, 'bold'), command=home_page)
-    flights = ctk.CTkButton(master=invisi, text='Flights', fg_color='#3434e3', width=100, height=40,
-                            corner_radius=10, font=('ariel', 20, 'bold'), command=flights_page)
+    flights = ctk.CTkButton(master=invisi, text='My Flights', fg_color='#3434e3', width=100, height=40,
+                            corner_radius=10, font=('ariel', 20, 'bold'), command=my_flights_page)
     Tracking = ctk.CTkButton(master=invisi, text='Tracking', fg_color='#3434e3', width=100, height=40,
                              corner_radius=10, font=('ariel', 20, 'bold'),command=tracking_page)
     Account = ctk.CTkButton(master=invisi, text='Account', fg_color='#3434e3', width=100, height=40,
@@ -366,21 +497,92 @@ def Account_page():
     new_phone.pack(pady=5)
     new_email=ctk.CTkEntry(master=new_frame,width=250,corner_radius=30,fg_color='#919090',border_width=0,height=40,placeholder_text='New Email',placeholder_text_color='#ffffff')
     new_email.pack(pady=5)
-    new_button=ctk.CTkButton(master=new_frame,width=250,corner_radius=30,fg_color='#3434e3',border_width=0,height=40,text='change',command=change_credentials)
+    new_button=ctk.CTkButton(master=new_frame,width=250,corner_radius=30,fg_color='#3434e3',border_width=0,height=40,text='Change',command=change_credentials,font=('ariel',15,'bold'))
     new_button.pack(pady=5)
-
-
-
-
     destroyer = 'Account'
 
 def admin_pannel():
     loginpage.destroy()
     adminframe=ctk.CTkFrame(master=window,fg_color='#ffffff')
     adminframe.pack(expand=True,fill='both')
-    central_frame=ctk.CTkFrame(master=adminframe,fg_color='#d7d9d7')
-    central_frame.pack(pady=30)
 
+    cursor.execute('''CREATE TABLE IF NOT EXISTS FLIGHTS (FLIGHT_ID VARCHAR(20) PRIMARY KEY, AIRLINE VARCHAR(100), FROM_CITY VARCHAR(100), TO_CITY VARCHAR(100), DEPARTURE_TIME VARCHAR(20), ARRIVAL_TIME VARCHAR(20), FLIGHT_DATE VARCHAR(15), TOTAL_SEATS INT, AVAILABLE_SEATS INT, PRICE DECIMAL(10,2), AIRCRAFT_TYPE VARCHAR(50));''')
+    def add_flight():
+        header = ctk.CTkFrame(master=adminframe, fg_color='#3434e3', height=100)
+        header.pack(side='top', fill='both', padx=0, pady=0)
+        header.pack_propagate(False)
+        invisi = ctk.CTkFrame(master=header, fg_color='#3434e3')
+        add_flight = ctk.CTkButton(master=invisi, text='Add Flight', fg_color='#3434e3', width=100, height=40,
+                                   corner_radius=10, font=('ariel', 20, 'bold'))
+        bookings = ctk.CTkButton(master=invisi, text='Bookings', fg_color='#3434e3', width=100, height=40,
+                                 corner_radius=10, font=('ariel', 20, 'bold'))
+
+        invisi.pack(pady=25)
+        add_flight.pack(anchor='center', side='left')
+        bookings.pack(anchor='center', side='left')
+
+        addflightframe = ctk.CTkFrame(master=adminframe, fg_color='#d7d9d7', height=600, width=350, corner_radius=30)
+        addflightframe.pack_propagate(False)
+        addflightframe.pack(pady=80, padx=20)
+        new_frame = ctk.CTkFrame(master=addflightframe, fg_color='#d7d9d7')
+        new_frame.pack(pady=20)
+        def enter_flight_data():
+            flight_id_value = flight_id.get().strip()
+            airline_value = airline.get().strip()
+            from_city_value = from_city.get().strip()
+            to_city_value = to_city.get().strip()
+            departure_time_value = departure_time.get().strip()
+            arrival_time_value = arrival_time.get().strip()
+            flight_date_value = flight_date.get().strip()
+            total_seats_value = int(total_seats.get().strip())
+            price_value = float(price.get().strip())
+            aircraft_type_value = aircraft_type.get().strip()
+            try:
+                query='''INSERT INTO FLIGHTS VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)'''
+                cursor.execute(query,(flight_id_value,airline_value,from_city_value,to_city_value,
+                                    departure_time_value,arrival_time_value,flight_date_value,
+                                    total_seats_value,total_seats_value,price_value,aircraft_type_value))
+                conn.commit()
+                messagebox.showinfo("SUCESS", 'FLIGHT ADDED')
+            except:
+                messagebox.showinfo("ERROR", 'FLIGHT DATA NOT ADDED')
+
+        flight_id = ctk.CTkEntry(master=new_frame, width=250, corner_radius=30, fg_color='#919090', border_width=0,
+                                 height=40, placeholder_text='Flight ID', placeholder_text_color='#ffffff')
+        flight_id.pack(pady=5)
+        airline = ctk.CTkEntry(master=new_frame, width=250, corner_radius=30, fg_color='#919090', border_width=0,
+                               height=40, placeholder_text='Airline', placeholder_text_color='#ffffff')
+        airline.pack(pady=5)
+        from_city = ctk.CTkEntry(master=new_frame, width=250, corner_radius=30, fg_color='#919090', border_width=0,
+                                 height=40, placeholder_text='From', placeholder_text_color='#ffffff')
+        from_city.pack(pady=5)
+        to_city = ctk.CTkEntry(master=new_frame, width=250, corner_radius=30, fg_color='#919090', border_width=0,
+                               height=40, placeholder_text='To', placeholder_text_color='#ffffff')
+        to_city.pack(pady=5)
+        departure_time = ctk.CTkEntry(master=new_frame, width=250, corner_radius=30, fg_color='#919090', border_width=0,
+                                      height=40, placeholder_text='Departure Time', placeholder_text_color='#ffffff')
+        departure_time.pack(pady=5)
+        arrival_time = ctk.CTkEntry(master=new_frame, width=250, corner_radius=30, fg_color='#919090', border_width=0,
+                                    height=40, placeholder_text='Arrival Time', placeholder_text_color='#ffffff')
+        arrival_time.pack(pady=5)
+        flight_date = ctk.CTkEntry(master=new_frame, width=250, corner_radius=30, fg_color='#919090', border_width=0,
+                                   height=40, placeholder_text='Flight Date', placeholder_text_color='#ffffff')
+        flight_date.pack(pady=5)
+        total_seats = ctk.CTkEntry(master=new_frame, width=250, corner_radius=30, fg_color='#919090', border_width=0,
+                                   height=40, placeholder_text='Total Seats', placeholder_text_color='#ffffff')
+        total_seats.pack(pady=5)
+        price = ctk.CTkEntry(master=new_frame, width=250, corner_radius=30, fg_color='#919090', border_width=0,
+                             height=40, placeholder_text='Price', placeholder_text_color='#ffffff')
+        price.pack(pady=5)
+        aircraft_type = ctk.CTkEntry(master=new_frame, width=250, corner_radius=30, fg_color='#919090', border_width=0,
+                                     height=40, placeholder_text='Aircraft Type', placeholder_text_color='#ffffff')
+        aircraft_type.pack(pady=5)
+        add_button = ctk.CTkButton(master=new_frame, width=250, corner_radius=30, fg_color='#3434e3', border_width=0,
+                                   height=40, text='Add', font=('ariel', 15, 'bold'),command=enter_flight_data)
+        add_button.pack(pady=5)
+
+
+    add_flight()
 
 login_page()
 window.mainloop()

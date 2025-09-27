@@ -1,5 +1,9 @@
 import customtkinter as ctk
 import mysql.connector as sql
+import tkintermapview
+import requests
+from tkinter import messagebox
+
 
 window = ctk.CTk()
 window.geometry('600x400')
@@ -48,7 +52,12 @@ def login_page():
             for j in i:
                 if j==password1:
                     print('LOGIN SUCESSFUl')
-                    home_page()
+                    if password1=='admin' and username1=='admin':
+                        print('ADMIN LOGIN')
+                        admin_pannel()
+                    else:
+                        home_page()
+
 
 
     login_button = ctk.CTkButton(master=placeholder2, text='Login', fg_color='#3434e3', width=200, height=40, corner_radius=20,command=check_user)
@@ -138,6 +147,17 @@ def home_page():
     search_flight_entry.pack(side='left')
     search_flight_button=ctk.CTkButton(master=search_frame,text="SEARCH",fg_color='#3434e3',height=50,corner_radius=40,font=('ariel', 15))
     search_flight_button.pack(padx=5,side='right')
+    def ai():
+        ai_frame=ctk.CTkFrame(master=homepage,corner_radius=20,fg_color='#d7d9d7',height=300,width=250)
+        ai_frame.pack_propagate(False)
+        ai_frame.place(x=1200,y=525)
+        ai_entry=ctk.CTkEntry(master=ai_frame,width=200,corner_radius=30)
+        ai_entry.place(x=5,y=265)
+        ai_entry_button=ctk.CTkButton(master=ai_frame,width=30,text='🚀',corner_radius=30)
+        ai_entry_button.place(x=205,y=265)
+    ai_button = ctk.CTkButton(master=homepage, corner_radius=1000,height=50,width=50,fg_color='#3434e3',text='AI',command=ai)
+    ai_button.pack(anchor='ne', side='bottom',pady=10,padx=10)
+
 
     destroyer='Home'
 
@@ -205,6 +225,77 @@ def tracking_page():
     flights.pack(anchor='center', side='left')
     Tracking.pack(anchor='center', side='left')
     Account.pack(anchor='center', side='left')
+    map_frame=ctk.CTkFrame(master=trackingpage,width=825,height=650)
+    map_frame.pack(anchor='w',pady=45,padx=30)
+    map_widget = tkintermapview.TkinterMapView(master=map_frame, width=800, height=800, corner_radius=0)
+    map_widget.pack()
+    def plane_location():
+        global marker
+        global flight
+        call_sign=search_flight_entry.get()
+        def get_flight_by_callsign(callsign):
+            url = "https://opensky-network.org/api/states/all"
+            response = requests.get(url)
+            data = response.json()
+            print(data)
+            all_flights = data['states']
+            results = []
+            for flight in all_flights:
+                if flight[1] and flight[1].strip() == callsign.strip():
+                    flight_data = {
+                        'icao24': flight[0],
+                        'callsign': flight[1],
+                        'longitude': flight[5],
+                        'latitude': flight[6],
+                        'altitude': flight[7],
+                        'on_ground': flight[8],
+                        'velocity': flight[9],
+                        'heading': flight[10]
+                    }
+                    results.append(flight_data)
+            print(results)
+            return results
+        if len(call_sign) >= 8:
+            pass
+        else:
+            call_sign = call_sign + ' ' * (8 - len(call_sign))
+        flight_data=get_flight_by_callsign(call_sign)
+        if flight_data == []:
+                messagebox.showinfo("ERROR",'NO FLIGHT FOUND')
+        else:
+            flight=flight_data[0]
+            marker = map_widget.set_marker(flight['latitude'], flight['longitude'], text=flight['callsign'])
+            map_widget.set_position(flight['latitude'], flight['longitude'])
+            map_widget.set_zoom(6)
+        data_frame = ctk.CTkFrame(master=trackingpage, fg_color='#d7d9d7', width=660, height=560)
+        data_frame.pack_propagate(False)
+        data_frame.place(x=850, y=225)
+        if flight == []:
+            pass
+        else:
+            text_info = "ICAO24:{}\nCallsign:{}\nLongitde:{}\nLatitude:{}\nAltitude:{}\nVelocity:{}\nHeading:{}".format(
+                flight['icao24'],
+                flight['callsign'],
+                flight['longitude'],
+                flight['latitude'],
+                flight['altitude'],
+                flight['velocity'],
+                flight['heading'])
+            data_label = ctk.CTkLabel(master=data_frame, text=text_info,
+                                      text_color="black", font=("Arial", 25),justify='left')
+
+            data_label.pack(anchor='nw',pady=20,padx=20)
+
+
+    search_flight_entry=ctk.CTkEntry(master=trackingpage,placeholder_text='🔍Enter Callsign',border_width=0,height=50,width=520,fg_color='#d7d9d7',corner_radius=40,text_color="#000000",font=('ariel', 15))
+    search_flight_entry.place(x=850,y=150)
+    search_flight_button=ctk.CTkButton(master=trackingpage,text="SEARCH",fg_color='#3434e3',height=50,corner_radius=40,font=('ariel', 15),command=plane_location)
+    search_flight_button.place(x=1375,y=150)
+
+
+
+
+
     destroyer = 'Tracking'
 def Account_page():
     global Accountpage
@@ -226,7 +317,7 @@ def Account_page():
     flights = ctk.CTkButton(master=invisi, text='Flights', fg_color='#3434e3', width=100, height=40,
                             corner_radius=10, font=('ariel', 20, 'bold'), command=flights_page)
     Tracking = ctk.CTkButton(master=invisi, text='Tracking', fg_color='#3434e3', width=100, height=40,
-                             corner_radius=10, font=('ariel', 20, 'bold'))
+                             corner_radius=10, font=('ariel', 20, 'bold'),command=tracking_page)
     Account = ctk.CTkButton(master=invisi, text='Account', fg_color='#3434e3', width=100, height=40,
                             corner_radius=10, font=('ariel', 20, 'bold'))
     name = ctk.CTkButton(master=header, text='TRAVEL SYSTEM', fg_color='#3434e3', width=90, height=40,
@@ -237,15 +328,58 @@ def Account_page():
     flights.pack(anchor='center', side='left')
     Tracking.pack(anchor='center', side='left')
     Account.pack(anchor='center', side='left')
-    user_display=ctk.CTkFrame(master=Accountpage,fg_color='#d7d9d7')
-    user_display.pack(pady=40,padx=20,anchor='w')
+    user_display=ctk.CTkFrame(master=Accountpage,fg_color='#d7d9d7',height=450,width=350,corner_radius=30)
+    user_display.pack_propagate(False)
+    user_display.pack(pady=130,padx=20)
+    new_frame=ctk.CTkFrame(master=user_display,fg_color='#d7d9d7')
+    new_frame.pack(pady=50)
+    def change_credentials():
+        new_user1=new_user.get()
+        old_user1=old_user.get()
+        old_pass1=old_pass.get()
+        new_pass1=new_pass.get()
+        new_phone1=new_phone.get()
+        new_email1=new_email.get()
+        try:
+            query='SELECT * FROM LOGIN_INFO WHERE USERNAME=%s AND PASSWORD=%s;'
+            cursor.execute(query,(old_user1,old_pass1,))
+            result=cursor.fetchone()
+            print(result)
+            if result[0] == old_user1 and result[1] == old_pass1:
+                query='UPDATE USER_INFO SET USERNAME=%s,PASSWORD=%s,EMAIL=%s,PHNO=%s WHERE USERNAME=%s AND PASSWORD=%s'
+                cursor.execute(query,(new_user1,new_pass1,new_email1,new_phone1,old_user1,old_pass1))
+                conn.commit()
+            else:
+                messagebox.showinfo("ERROR", 'INVALID CREDENTIALS')
+        except:
+            messagebox.showinfo("ERROR", 'INVALID CREDENTIALS')
+
+    new_user=ctk.CTkEntry(master=new_frame,width=250,corner_radius=30,fg_color='#919090',border_width=0,height=40,placeholder_text='New Username',placeholder_text_color='#ffffff')
+    new_user.pack(pady=5)
+    old_user=ctk.CTkEntry(master=new_frame,width=250,corner_radius=30,fg_color='#919090',border_width=0,height=40,placeholder_text='Old Username',placeholder_text_color='#ffffff')
+    old_user.pack(pady=5)
+    new_pass=ctk.CTkEntry(master=new_frame,width=250,corner_radius=30,fg_color='#919090',border_width=0,height=40,placeholder_text='New Password',placeholder_text_color='#ffffff',show='*')
+    new_pass.pack(pady=5)
+    old_pass=ctk.CTkEntry(master=new_frame,width=250,corner_radius=30,fg_color='#919090',border_width=0,height=40,placeholder_text='Old Password',placeholder_text_color='#ffffff',show='*')
+    old_pass.pack(pady=5)
+    new_phone=ctk.CTkEntry(master=new_frame,width=250,corner_radius=30,fg_color='#919090',border_width=0,height=40,placeholder_text='New Phone number',placeholder_text_color='#ffffff')
+    new_phone.pack(pady=5)
+    new_email=ctk.CTkEntry(master=new_frame,width=250,corner_radius=30,fg_color='#919090',border_width=0,height=40,placeholder_text='New Email',placeholder_text_color='#ffffff')
+    new_email.pack(pady=5)
+    new_button=ctk.CTkButton(master=new_frame,width=250,corner_radius=30,fg_color='#3434e3',border_width=0,height=40,text='change',command=change_credentials)
+    new_button.pack(pady=5)
 
 
 
 
     destroyer = 'Account'
 
-
+def admin_pannel():
+    loginpage.destroy()
+    adminframe=ctk.CTkFrame(master=window,fg_color='#ffffff')
+    adminframe.pack(expand=True,fill='both')
+    central_frame=ctk.CTkFrame(master=adminframe,fg_color='#d7d9d7')
+    central_frame.pack(pady=30)
 
 
 login_page()

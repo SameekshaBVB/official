@@ -227,7 +227,7 @@ def tracking_page():
     Account.pack(anchor='center', side='left')
     map_frame=ctk.CTkFrame(master=trackingpage,width=825,height=650)
     map_frame.pack(anchor='w',pady=45,padx=30)
-    map_widget = tkintermapview.TkinterMapView(master=map_frame, width=1000, height=800, corner_radius=0)
+    map_widget = tkintermapview.TkinterMapView(master=map_frame, width=800, height=800, corner_radius=0)
     map_widget.pack()
     def plane_location():
         global marker
@@ -328,8 +328,23 @@ def Account_page():
     flights.pack(anchor='center', side='left')
     Tracking.pack(anchor='center', side='left')
     Account.pack(anchor='center', side='left')
-    user_display=ctk.CTkFrame(master=Accountpage,fg_color='#d7d9d7')
-    user_display.pack(pady=40,padx=20,anchor='w')
+    user_display=ctk.CTkFrame(master=Accountpage,fg_color='#d7d9d7',height=350,width=350,corner_radius=30)
+    user_display.pack_propagate(False)
+    user_display.pack(pady=150,padx=20)
+    new_frame=ctk.CTkFrame(master=user_display,fg_color='#d7d9d7')
+    new_frame.pack(pady=50)
+    new_user=ctk.CTkEntry(master=new_frame,width=250,corner_radius=30,fg_color='#919090',border_width=0,height=40,placeholder_text='New Username',placeholder_text_color='#ffffff')
+    new_user.pack(pady=5)
+    new_pass=ctk.CTkEntry(master=new_frame,width=250,corner_radius=30,fg_color='#919090',border_width=0,height=40,placeholder_text='New Password',placeholder_text_color='#ffffff')
+    new_pass.pack(pady=5)
+    new_phone=ctk.CTkEntry(master=new_frame,width=250,corner_radius=30,fg_color='#919090',border_width=0,height=40,placeholder_text='New Phone number',placeholder_text_color='#ffffff')
+    new_phone.pack(pady=5)
+    new_email=ctk.CTkEntry(master=new_frame,width=250,corner_radius=30,fg_color='#919090',border_width=0,height=40,placeholder_text='New Email',placeholder_text_color='#ffffff')
+    new_email.pack(pady=5)
+    new_button=ctk.CTkButton(master=new_frame,width=250,corner_radius=30,fg_color='#3434e3',border_width=0,height=40,text='change')
+    new_button.pack(pady=5)
+
+
     destroyer = 'Account'
 
 def admin_pannel():

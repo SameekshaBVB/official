@@ -151,10 +151,10 @@ def home_page():
                             placeholder_text='To', border_width=0, height=50, width=150,
                             font=('ariel', 15))
     to_entry.pack(side='left', padx=5)
-    date = ctk.CTkEntry(master=invis_frame, fg_color='#c2c8d1', corner_radius=30,
+    date_entry = ctk.CTkEntry(master=invis_frame, fg_color='#c2c8d1', corner_radius=30,
                         placeholder_text='Date(dd/mm/yyyy)', border_width=0, height=50,
                         width=200, font=('ariel', 15))
-    date.pack(side='left', padx=5)
+    date_entry.pack(side='left', padx=5)
     invis_frame2 = ctk.CTkFrame(master=search_section, fg_color='#ffffff')
     invis_frame2.pack(side='right', anchor='e')
 
@@ -263,6 +263,7 @@ def home_page():
                     cursor.execute(update_query, (flight_id, airline))
                     conn.commit()
                     messagebox.showinfo("SUCCESS", f'Booking confirmed for flight {flight_id}!')
+                    search_flights(from_entry.get(), to_entry.get(), date_entry.get(), scroll_frame)
 
 
                 if available_seats > 0:
@@ -291,7 +292,7 @@ def home_page():
     scroll_frame = ctk.CTkScrollableFrame(master=homepage, fg_color='#f0f0f0')
     scroll_frame.pack(expand=True, fill='both', pady=(0, 10), padx=10)
     search_flight = ctk.CTkButton(master=invis_frame2, text='Search', fg_color='#3434e3',
-                                  height=50, width=150, corner_radius=30, font=('ariel', 15),command=search_flights(from_entry.get(), to_entry.get(), date.get(), scroll_frame))
+                                  height=50, width=150, corner_radius=30, font=('ariel', 15),command=lambda: search_flights(from_entry.get(), to_entry.get(), date_entry.get(), scroll_frame))
     search_flight.pack()
 
     destroyer = 'Home'

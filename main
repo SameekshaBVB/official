@@ -4,6 +4,8 @@ import tkintermapview
 import requests
 from tkinter import messagebox
 
+from PIL.ImageOps import expand
+
 window = ctk.CTk()
 window.geometry('600x400')
 window.title("TRAVEL SYSTEM")
@@ -48,6 +50,7 @@ def login_page():
         password1= password.get()
         cursor.execute('SELECT PASSWORD FROM LOGIN_INFO WHERE USERNAME=%s;',(username1,))
         sqlusername= cursor.fetchall()
+        print(sqlusername)
         for i in sqlusername:
             for j in i:
                 if j==password1:
@@ -78,16 +81,16 @@ def sign_up():
     placeholder2.pack(pady=20)
 
     Username = ctk.CTkEntry(master=placeholder2, placeholder_text='Username', corner_radius=20, height=40, width=200,
-                            border_width=0,fg_color='#c2c8d1')
+                            border_width=0,fg_color='#c2c8d1',text_color='#000000')
     Username.pack(pady=5,anchor='center')
     Email = ctk.CTkEntry(master=placeholder2, placeholder_text='Email', corner_radius=20, height=40, width=200,
-                            border_width=0,fg_color='#c2c8d1')
+                            border_width=0,fg_color='#c2c8d1',text_color='#000000')
     Email.pack(pady=5,anchor='center')
     password = ctk.CTkEntry(master=placeholder2, placeholder_text='Password', corner_radius=20, height=40, width=200,
-                            border_width=0,show="*",fg_color='#c2c8d1')
+                            border_width=0,show="*",fg_color='#c2c8d1',text_color='#000000')
     password.pack(pady=5,anchor='center')
     phno = ctk.CTkEntry(master=placeholder2, placeholder_text='Phone Number', corner_radius=20, height=40, width=200,
-                            border_width=0,fg_color='#c2c8d1')
+                            border_width=0,fg_color='#c2c8d1',text_color='#000000')
     phno.pack(pady=5,anchor='center')
     def sign_up():
         username1 = Username.get()
@@ -509,23 +512,33 @@ def admin_pannel():
     loginpage.destroy()
     adminframe=ctk.CTkFrame(master=window,fg_color='#ffffff')
     adminframe.pack(expand=True,fill='both')
+    destroyer1=''
 
     cursor.execute('''CREATE TABLE IF NOT EXISTS FLIGHTS (FLIGHT_ID VARCHAR(20) PRIMARY KEY, AIRLINE VARCHAR(100), FROM_CITY VARCHAR(100), TO_CITY VARCHAR(100), DEPARTURE_TIME VARCHAR(20), ARRIVAL_TIME VARCHAR(20), FLIGHT_DATE VARCHAR(15), TOTAL_SEATS INT, AVAILABLE_SEATS INT, PRICE DECIMAL(10,2), AIRCRAFT_TYPE VARCHAR(50));''')
+
     def add_flight():
-        header = ctk.CTkFrame(master=adminframe, fg_color='#3434e3', height=100)
+        global destroyer1
+        global addflightbaseframe
+        global booking_frame
+        if destroyer1=='booking':
+            booking_frame.destroy()
+        destroyer1 = 'addflight'
+        addflightbaseframe=ctk.CTkFrame(master=adminframe,fg_color='#ffffff')
+        addflightbaseframe.pack(expand=True,fill='both')
+        header = ctk.CTkFrame(master=addflightbaseframe, fg_color='#3434e3', height=100)
         header.pack(side='top', fill='both', padx=0, pady=0)
         header.pack_propagate(False)
         invisi = ctk.CTkFrame(master=header, fg_color='#3434e3')
         add_flight = ctk.CTkButton(master=invisi, text='Add Flight', fg_color='#3434e3', width=100, height=40,
                                    corner_radius=10, font=('ariel', 20, 'bold'))
         bookings = ctk.CTkButton(master=invisi, text='Bookings', fg_color='#3434e3', width=100, height=40,
-                                 corner_radius=10, font=('ariel', 20, 'bold'))
+                                 corner_radius=10, font=('ariel', 20, 'bold'),command=booking)
 
         invisi.pack(pady=25)
         add_flight.pack(anchor='center', side='left')
         bookings.pack(anchor='center', side='left')
 
-        addflightframe = ctk.CTkFrame(master=adminframe, fg_color='#d7d9d7', height=600, width=350, corner_radius=30)
+        addflightframe = ctk.CTkFrame(master=addflightbaseframe, fg_color='#d7d9d7', height=600, width=350, corner_radius=30)
         addflightframe.pack_propagate(False)
         addflightframe.pack(pady=80, padx=20)
         new_frame = ctk.CTkFrame(master=addflightframe, fg_color='#d7d9d7')
@@ -588,6 +601,199 @@ def admin_pannel():
                                    height=40, text='Add', font=('ariel', 15, 'bold'),command=enter_flight_data)
         add_button.pack(pady=5)
 
+    def booking():
+        global booking_frame
+        global destroyer1
+        global addflightbaseframe
+        if destroyer1=='addflight':
+            addflightbaseframe.destroy()
+        destroyer1 = 'booking'
+        booking_frame=ctk.CTkFrame(master=adminframe,fg_color='#ffffff')
+        booking_frame.pack(expand=True,fill='both')
+        header = ctk.CTkFrame(master=booking_frame, fg_color='#3434e3', height=100)
+        header.pack(side='top', fill='both', padx=0, pady=0)
+        header.pack_propagate(False)
+        invisi = ctk.CTkFrame(master=header, fg_color='#3434e3')
+        add_flight1 = ctk.CTkButton(master=invisi, text='Add Flight', fg_color='#3434e3', width=100, height=40,
+                                   corner_radius=10, font=('ariel', 20, 'bold'),command=add_flight)
+        bookings = ctk.CTkButton(master=invisi, text='Bookings', fg_color='#3434e3', width=100, height=40,
+                                 corner_radius=10, font=('ariel', 20, 'bold'))
+
+        invisi.pack(pady=25)
+        add_flight1.pack(anchor='center', side='left')
+        bookings.pack(anchor='center', side='left')
+        search_section = ctk.CTkFrame(master=booking_frame, fg_color='#ffffff', height=70)
+        search_section.pack(fill='x', pady=10, padx=10)
+        search_section.pack_propagate(False)
+        invis_frame = ctk.CTkFrame(master=search_section, fg_color='#ffffff')
+        invis_frame.pack(side='left', anchor='w')
+        from_entry = ctk.CTkEntry(master=invis_frame, fg_color='#c2c8d1', corner_radius=30,
+                                  placeholder_text='From', border_width=0, height=50, width=150,
+                                  font=('ariel', 15))
+        from_entry.pack(side='left', padx=(0, 5))
+        to_entry = ctk.CTkEntry(master=invis_frame, fg_color='#c2c8d1', corner_radius=30,
+                                placeholder_text='To', border_width=0, height=50, width=150,
+                                font=('ariel', 15))
+        to_entry.pack(side='left', padx=5)
+        date_entry = ctk.CTkEntry(master=invis_frame, fg_color='#c2c8d1', corner_radius=30,
+                                  placeholder_text='Date(dd/mm/yyyy)', border_width=0, height=50,
+                                  width=200, font=('ariel', 15))
+        date_entry.pack(side='left', padx=5)
+        invis_frame2 = ctk.CTkFrame(master=search_section, fg_color='#ffffff')
+        invis_frame2.pack(side='right', anchor='e')
+
+        def search_flights(from_city, to_city, date, scroll_frame):
+            for widget in scroll_frame.winfo_children():
+                widget.destroy()
+
+            try:
+                query = '''SELECT FLIGHT_ID, AIRLINE, FROM_CITY, TO_CITY, DEPARTURE_TIME, 
+                               ARRIVAL_TIME, FLIGHT_DATE, AVAILABLE_SEATS, PRICE, AIRCRAFT_TYPE 
+                               FROM FLIGHTS WHERE FROM_CITY LIKE %s AND TO_CITY LIKE %s'''
+
+                params = [f'%{from_city}%', f'%{to_city}%']
+                if date.strip():
+                    query += ' AND FLIGHT_DATE = %s'
+                    params.append(date)
+
+                cursor.execute(query, params)
+                flights = cursor.fetchall()
+
+                if not flights:
+                    no_results = ctk.CTkLabel(
+                        master=scroll_frame,
+                        text="No flights found matching your search criteria.",
+                        font=('Arial', 16),
+                        text_color='#666666'
+                    )
+                    no_results.pack(pady=20)
+                    return
+                for flight in flights:
+                    flight_id, airline, from_loc, to_loc, dep_time, arr_time, flight_date, available_seats, price, aircraft = flight
+                    flight_card = ctk.CTkFrame(
+                        master=scroll_frame,
+                        fg_color='#ffffff',
+                        corner_radius=15,
+                        border_width=2,
+                        border_color='#e0e0e0'
+                    )
+                    flight_card.pack(fill='x', pady=10, padx=20)
+                    header_frame = ctk.CTkFrame(master=flight_card, fg_color='#f8f9fa', corner_radius=10)
+                    header_frame.pack(fill='x', pady=10, padx=15)
+
+                    airline_label = ctk.CTkLabel(
+                        master=header_frame,
+                        text=f"{airline} - {flight_id}",
+                        font=('Arial', 18, 'bold'),
+                        text_color='#2c3e50'
+                    )
+                    airline_label.pack(side='left', pady=10, padx=10)
+
+                    aircraft_label = ctk.CTkLabel(
+                        master=header_frame,
+                        text=f"Aircraft: {aircraft}",
+                        font=('Arial', 12),
+                        text_color='#7f8c8d'
+                    )
+                    aircraft_label.pack(side='right', pady=10, padx=10)
+                    details_frame = ctk.CTkFrame(master=flight_card, fg_color='transparent')
+                    details_frame.pack(fill='x', pady=5, padx=15)
+                    route_frame = ctk.CTkFrame(master=details_frame, fg_color='transparent')
+                    route_frame.pack(fill='x', pady=5)
+                    route_text = f"{from_loc} → {to_loc}"
+                    route_label = ctk.CTkLabel(
+                        master=route_frame,
+                        text=route_text,
+                        font=('Arial', 16, 'bold'),
+                        text_color='#34495e'
+                    )
+                    route_label.pack(side='left')
+                    date_label = ctk.CTkLabel(
+                        master=route_frame,
+                        text=f"Date: {flight_date}",
+                        font=('Arial', 14),
+                        text_color='#7f8c8d'
+                    )
+                    date_label.pack(side='right')
+                    info_frame = ctk.CTkFrame(master=details_frame, fg_color='transparent')
+                    info_frame.pack(fill='x', pady=5)
+                    time_text = f"Departure: {dep_time} | Arrival: {arr_time}"
+                    time_label = ctk.CTkLabel(
+                        master=info_frame,
+                        text=time_text,
+                        font=('Arial', 14),
+                        text_color='#2c3e50'
+                    )
+                    time_label.pack(side='left')
+                    seats_label = ctk.CTkLabel(
+                        master=info_frame,
+                        text=f"Available Seats: {available_seats}",
+                        font=('Arial', 14),
+                        text_color='#27ae60' if available_seats > 0 else '#e74c3c'
+                    )
+                    seats_label.pack(side='right')
+                    bottom_frame = ctk.CTkFrame(master=flight_card, fg_color='transparent')
+                    bottom_frame.pack(fill='x', pady=10, padx=15)
+
+                    price_label = ctk.CTkLabel(
+                        master=bottom_frame,
+                        text=f"₹{price:.2f}",
+                        font=('Arial', 20, 'bold'),
+                        text_color='#e67e22'
+                    )
+                    price_label.pack(side='left')
+
+                    def book_button_screen():
+                        print(flight_id)
+
+                        query=f'DELETE FROM FLIGHTS WHERE FLIGHT_ID="{flight_id}";'
+                        print(query)
+                        cursor.execute(query)
+                        query1=f'DROP TABLE {flight_id};'
+                        cursor.execute(query1)
+                        messagebox.showinfo("SUCCESS", f'"{flight_id}" DELETED')
+
+
+                    if available_seats > 0:
+                        book_button = ctk.CTkButton(
+                            master=bottom_frame,
+                            text="DELETE",
+                            fg_color='red',
+                            hover_color='red',
+                            corner_radius=20,
+                            font=('Arial', 14, 'bold'),
+                            command=book_button_screen
+                        )
+                        book_button.pack(side='right', padx=(10, 0))
+                    else:
+                        sold_out_label = ctk.CTkLabel(
+                            master=bottom_frame,
+                            text="SOLD OUT",
+                            font=('Arial', 14, 'bold'),
+                            text_color='#e74c3c'
+                        )
+                        sold_out_label.pack(side='right')
+                    cursor.execute(f"SELECT * FROM {flight_id}")
+                    passenger_details =cursor.fetchall()
+                    print(passenger_details)
+                    for i in passenger_details:
+                        passenger_display = ctk.CTkLabel(fg_color='#f0f0f0', master=flight_card, text=i,text_color='black')
+                        passenger_display.pack(fill='x', pady=10, padx=15)
+
+
+
+
+
+            except:
+                pass
+
+        scroll_frame = ctk.CTkScrollableFrame(master=booking_frame, fg_color='#f0f0f0')
+        scroll_frame.pack(expand=True, fill='both', pady=(0, 10), padx=10)
+        search_flight = ctk.CTkButton(master=invis_frame2, text='Search', fg_color='#3434e3',
+                                      height=50, width=150, corner_radius=30, font=('ariel', 15),
+                                      command=lambda: search_flights(from_entry.get(), to_entry.get(), date_entry.get(),
+                                                                     scroll_frame))
+        search_flight.pack()
 
     add_flight()
 

@@ -4,8 +4,6 @@ import tkintermapview
 import requests
 from tkinter import messagebox
 
-from PIL.ImageOps import expand
-
 window = ctk.CTk()
 window.geometry('600x400')
 window.title("TRAVEL SYSTEM")
@@ -27,6 +25,7 @@ cursor.execute('CREATE TABLE IF NOT EXISTS LOGIN_INFO (USERNAME VARCHAR(50),PASS
 cursor.execute('CREATE TABLE IF NOT EXISTS USER_INFO (USERNAME VARCHAR(50),PASSWORD VARCHAR(50),EMAIL VARCHAR(50),PHNO INT(12));')
 
 destroyer=''
+destroyer1=''
 
 
 
@@ -512,7 +511,7 @@ def admin_pannel():
     loginpage.destroy()
     adminframe=ctk.CTkFrame(master=window,fg_color='#ffffff')
     adminframe.pack(expand=True,fill='both')
-    destroyer1=''
+
 
     cursor.execute('''CREATE TABLE IF NOT EXISTS FLIGHTS (FLIGHT_ID VARCHAR(20) PRIMARY KEY, AIRLINE VARCHAR(100), FROM_CITY VARCHAR(100), TO_CITY VARCHAR(100), DEPARTURE_TIME VARCHAR(20), ARRIVAL_TIME VARCHAR(20), FLIGHT_DATE VARCHAR(15), TOTAL_SEATS INT, AVAILABLE_SEATS INT, PRICE DECIMAL(10,2), AIRCRAFT_TYPE VARCHAR(50));''')
 
